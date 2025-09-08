@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fayaz Parris — Interactive 3D Portfolio</title>
+  <meta name="theme-color" content="#2266ff" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f1724; --card:#ffffffee; --accent:#66a6ff; --muted:#94a3b8; --glass: rgba(255,255,255,0.06);
+      --glass-2: rgba(255,255,255,0.9);
+      --max-width:1100px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,-apple-system; background:linear-gradient(180deg,#071029 0%, #0b1020 60%); color:#e6eef8; -webkit-font-smoothing:antialiased;}
+
+    .bg-wrap{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+    .bg-layer{position:absolute;inset:0;background-position:center;background-size:cover;filter:blur(14px) saturate(110%);opacity:0.08;transform:translateZ(-200px) scale(1.12);} 
+    .bg-glow{position:absolute;inset:-20%;background:radial-gradient(closest-side,#66a6ff55,transparent 40%);mix-blend-mode:screen;opacity:0.7}
+
+    .container{position:relative;z-index:3;max-width:var(--max-width);margin:36px auto;padding:28px;}
+
+    header.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px;border-radius:14px;background:linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));box-shadow: 0 8px 30px rgba(2,6,23,0.6);backdrop-filter: blur(6px);}
+    .brand{display:flex;align-items:center;gap:14px}
+    .brand h1{margin:0;font-size:1.25rem;letter-spacing:0.4px;font-weight:800;color:var(--glass-2)}
+    .cta{display:flex;gap:10px;align-items:center}
+    .btn{background:var(--accent);color:#042;padding:10px 14px;border-radius:12px;font-weight:700;text-decoration:none;box-shadow:0 6px 20px rgba(102,166,255,0.18);border:none;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--glass-2);box-shadow:none}
+
+    .hero{margin-top:22px;display:grid;grid-template-columns:320px 1fr;gap:28px;align-items:stretch}
+    .card{
+      border-radius:18px;padding:22px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 18px 50px rgba(2,6,23,0.6);backdrop-filter: blur(6px);transform-style:preserve-3d;transition:transform 300ms cubic-bezier(.2,.9,.3,1);
+    }
+
+    .profile{display:flex;flex-direction:column;align-items:center;gap:14px}
+    .avatar{width:180px;height:180px;border-radius:50%;overflow:hidden;border:6px solid rgba(102,166,255,0.12);box-shadow:0 18px 40px rgba(12,23,50,0.6);transform:translateZ(40px);transition:transform 350ms}
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .name{font-size:1.25rem;font-weight:800;color:#fff}
+    .role{color:var(--muted);font-weight:600}
+    .skill-badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+    .badge{padding:6px 10px;border-radius:999px;background:linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.03);font-weight:600;color:var(--glass-2);font-size:0.86rem}
+
+    .intro{padding:12px 6px}
+    .intro h2{margin:0 0 10px 0;color:var(--glass-2);font-size:1.5rem}
+    .intro p{color:#cfd9ea;line-height:1.5}
+
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:16px}
+    .mini-card{border-radius:12px;padding:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03)}
+    .mini-card h4{margin:0 0 8px 0;color:var(--glass-2)}
+    .mini-card p{margin:0;color:var(--muted)}
+
+    section.projects{margin-top:26px}
+    .projects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+    .project{border-radius:14px;padding:16px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);transform-style:preserve-3d;transition:transform 250ms}
+    .project:hover{transform:translateY(-8px) rotateX(6deg) scale(1.02)}
+    .project h3{margin:0 0 8px 0;color:var(--glass-2)}
+    .project p{margin:0;color:var(--muted)}
+
+    .fab{position:fixed;right:26px;bottom:26px;z-index:6}
+    .fab a{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(180deg,var(--accent),#3b8cff);padding:14px 18px;border-radius:999px;color:#042;font-weight:800;text-decoration:none;box-shadow:0 18px 40px rgba(31,63,124,0.45)}
+
+    footer{margin-top:36px;padding:20px;border-radius:12px;text-align:center;color:var(--muted);font-size:0.95rem}
+
+    @keyframes floatY{0%{transform:translateY(0)}50%{transform:translateY(-10px)}100%{transform:translateY(0)}}
+    .float{animation:floatY 6s ease-in-out infinite}
+
+    @media (max-width:920px){.hero{grid-template-columns:1fr;}.avatar{width:140px;height:140px}.grid{grid-template-columns:1fr}}
+
+    nav.links{display:flex;gap:10px}
+    .pill{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--glass-2);font-weight:600}
+  </style>
+</head>
+<body>
+  <div class="bg-wrap" aria-hidden="true">
+    <div class="bg-layer" style="background-image:url('WhatsApp-Image-2025-09-08-at-17.24.39_c298dcbf.jpg');filter:blur(20px) brightness(.6)"></div>
+    <div class="bg-glow"></div>
+  </div>
+
+  <div class="container">
+    <header class="topbar" role="banner">
+      <div class="brand" aria-hidden>
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" style="transform:translateZ(30px)"><rect x="2" y="2" width="20" height="20" rx="5" fill="#66a6ff"/><path d="M7 12h10M7 16h6" stroke="#06202a" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <div>
+          <h1>Fayaz Parris</h1>
+          <div style="font-size:0.85rem;color:var(--muted);">E&C Engg • IoT • ML • Full-stack</div>
+        </div>
+      </div>
+
+      <div class="cta">
+        <nav class="links" aria-label="Primary navigation">
+          <a class="pill" href="#about">About</a>
+          <a class="pill" href="#projects">Projects</a>
+          <a class="pill" href="#contact">Contact</a>
+        </nav>
+        <a class="btn" id="downloadResume" href="fayaz_2025_1.pdf" download>Download Resume</a>
+      </div>
+    </header>
+
+    <main class="hero" id="about">
+      <aside class="card profile" id="tiltCard" role="region" aria-label="Profile card">
+        <div class="avatar" id="avatar">
+          <img src="https://i.postimg.cc/yNkFWym8/IMG-20231025-WA0003-1.jpg" alt="Fayaz Parris">
+        </div>
+        <div style="text-align:center">
+          <div class="name">Fayaz Parris</div>
+          <div class="role">Electronics & Communication • Data Analytics</div>
+        </div>
+        <div class="skill-badges">
+          <span class="badge">IoT</span>
+          <span class="badge">Machine Learning</span>
+          <span class="badge">React</span>
+          <span class="badge">Python</span>
+          <span class="badge">Embedded</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <a class="btn" href="#projects">View Projects</a>
+          <a class="btn ghost" href="mailto:parrisfayaz@gmail.com">Email</a>
+        </div>
+      </aside>
+
+      <section class="card intro">
+        <h2>Hello — I'm Fayaz 👋</h2>
+        <p>Recent E&C graduate (B.M.S College of Engineering) with a Minor in Data Analytics. I build end-to-end systems that combine hardware, firmware and full-stack software — from cognitive radio visualizers to smart mirrors and ML-driven IoT devices.</p>
+
+        <div class="grid">
+          <div class="mini-card">
+            <h4>Experience</h4>
+            <p>Design Engineer Intern • Machine Learning Intern • Hands-on prototyping</p>
+          </div>
+          <div class="mini-card">
+            <h4>Education</h4>
+            <p>B.E. E&C — BMSCE (Jul 2021 — Jul 2025). Minor: Data Analytics</p>
+          </div>
+          <div class="mini-card">
+            <h4>Tooling</h4>
+            <p>Raspberry Pi • TensorFlow • React • Node • Python • C++</p>
+          </div>
+          <div class="mini-card">
+            <h4>Contact</h4>
+            <p><a href="mailto:parrisfayaz@gmail.com" style="color:inherit;text-decoration:underline">parrisfayaz@gmail.com</a> • +91 63640 49430</p>
+          </div>
+        </div>
+
+        <section class="projects" id="projects">
+          <h3 style="color:var(--glass-2);margin-top:18px">Selected Projects</h3>
+          <div class="projects-grid">
+            <article class="project">
+              <h3>Intelligent Surveillance Camera</h3>
+              <p>Raspberry Pi + IR + HC-SR04 — real-time motion detection and lightweight edge ML alerts.</p>
+            </article>
+
+            <article class="project">
+              <h3>Cognitive Radio Networks</h3>
+              <p>Python + React + 3D visualization for tower mapping and frequency analysis.</p>
+            </article>
+
+            <article class="project">
+              <h3>Smart Mirrors</h3>
+              <p>Modular MagicMirror build with voice integration and AI features for healthcare.</p>
+            </article>
+
+            <article class="project">
+              <h3>Steganography & Watermarking</h3>
+              <p>Python utility for embedding/verifying timestamps & watermarks in documents.</p>
+            </article>
+
+          </div>
+        </section>
+
+      </section>
+    </main>
+
+    <section class="card" id="contact">
+      <h2 style="color:var(--glass-2)">Get In Touch</h2>
+      <p style="color:var(--muted)">I'm available for internships and full-time roles. You can download my resume or email me directly.</p>
+      <p style="margin-top:12px">LinkedIn: <a href="https://www.linkedin.com/in/fayaz-parris-153825229" target="_blank" style="color:inherit;text-decoration:underline">linkedin.com/in/fayaz-parris</a></p>
+      <p>GitHub: <a href="https://github.com/fayazparris?tab=repositories" target="_blank" style="color:inherit;text-decoration:underline">github.com/fayaz</a></p>
+    </section>
+
+    <footer>© 2025 Fayaz Parris — Built with ❤️ • Tip: hover/tap the profile card to feel 3D</footer>
+
+  </div>
+
+  <div class="fab">
+    <a href="fayaz_2025_1.pdf" download aria-label="Download resume">⬇️ Resume</a>
+  </div>
+
+  <script>
+    const tiltCard = document.getElementById('tiltCard');
+    const avatar = document.getElementById('avatar');
+    function handleMove(e){
+      const rect = tiltCard.getBoundingClientRect();
+      const x = (e.clientX - rect.left) - rect.width/2;
+      const y = (e.clientY - rect.top) - rect.height/2;
+      const rx = (-y / rect.height) * 14;
+      const ry = (x / rect.width) * 18;
+      tiltCard.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.02)`;
+      avatar.style.transform = `translateZ(48px) rotateY(${ry*0.6}deg) rotateX(${rx*0.3}deg)`;
+    }
+    function reset(){ tiltCard.style.transform=''; avatar.style.transform='translateZ(40px)'; }
+    tiltCard.addEventListener('mousemove', handleMove);
+    tiltCard.addEventListener('mouseleave', reset);
+
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click', e=>{
+        e.preventDefault(); const t = document.querySelector(a.getAttribute('href'));
+        if(t) t.scrollIntoView({behavior:'smooth',block:'start'});
+      });
+    });
+
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting) entry.target.style.transform='translateY(0)';
+      });
+    },{threshold:0.12});
+    document.querySelectorAll('.project').forEach(p=>{p.style.transform='translateY(18px)';p.style.opacity=0.98;io.observe(p)});
+
+    document.getElementById('downloadResume').addEventListener('keyup', e=>{ if(e.key==='Enter') window.location = e.target.href });
+    window.addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='r'){ window.open('fayaz_2025_1.pdf','_blank') }});
+  </script>
+</body>
+</html>
